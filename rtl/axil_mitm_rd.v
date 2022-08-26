@@ -14,7 +14,7 @@ module axil_adapter_rd #
     // Width of interface data bus in bits
     parameter DATA_WIDTH = 32,
     // Width of interface wstrb (width of data bus in words)
-    parameter STRB_WIDTH = (DATA_WIDTH/8),
+    parameter STRB_WIDTH = (DATA_WIDTH/8)
 )
 (
     input  wire                     clk,
@@ -118,8 +118,6 @@ end
 
 always @(posedge clk) begin
     state_reg <= state_next;
-
-    current_segment_reg <= current_segment_next;
 
     s_axil_arready_reg <= s_axil_arready_next;
     s_axil_rdata_reg <= s_axil_rdata_next;

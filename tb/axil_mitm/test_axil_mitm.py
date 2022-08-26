@@ -195,7 +195,7 @@ tests_dir = os.path.abspath(os.path.dirname(__file__))
 rtl_dir = os.path.abspath(os.path.join(tests_dir, '..', '..', 'rtl'))
 
 
-@pytest.mark.parametrize("data_width", [8, 16, 32])
+@pytest.mark.parametrize("data_width", [8, 16, 32, 48])
 def test_axil_adapter(request, data_width):
     dut = "axil_mitm"
     module = os.path.splitext(os.path.basename(__file__))[0]

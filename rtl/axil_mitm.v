@@ -14,7 +14,7 @@ module axil_mitm #
     // Width of interface data bus in bits
     parameter DATA_WIDTH = 32,
     // Width of interface wstrb (width of data bus in words)
-    parameter STRB_WIDTH = (DATA_WIDTH/8),
+    parameter STRB_WIDTH = (DATA_WIDTH/8)
 )
 (
     input  wire                     clk,
@@ -70,7 +70,7 @@ module axil_mitm #
 axil_adapter_wr #(
     .ADDR_WIDTH(ADDR_WIDTH),
     .DATA_WIDTH(DATA_WIDTH),
-    .STRB_WIDTH(STRB_WIDTH),
+    .STRB_WIDTH(STRB_WIDTH)
 )
 axil_adapter_wr_inst (
     .clk(clk),
@@ -110,7 +110,7 @@ axil_adapter_wr_inst (
 axil_adapter_rd #(
     .ADDR_WIDTH(ADDR_WIDTH),
     .DATA_WIDTH(DATA_WIDTH),
-    .STRB_WIDTH(STRB_WIDTH),
+    .STRB_WIDTH(STRB_WIDTH)
 )
 axil_adapter_rd_inst (
     .clk(clk),
