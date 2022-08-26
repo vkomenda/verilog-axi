@@ -7,7 +7,7 @@
 /*
  * AXI4 lite Man-in-the-middle (read)
  */
-module axil_adapter_rd #
+module axil_mitm_rd #
 (
     // Width of address bus in bits
     parameter ADDR_WIDTH = 32,

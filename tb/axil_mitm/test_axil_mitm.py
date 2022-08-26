@@ -195,8 +195,9 @@ tests_dir = os.path.abspath(os.path.dirname(__file__))
 rtl_dir = os.path.abspath(os.path.join(tests_dir, '..', '..', 'rtl'))
 
 
-@pytest.mark.parametrize("data_width", [8, 16, 32, 48])
-def test_axil_adapter(request, data_width):
+@pytest.mark.parametrize("addr_width", [16, 32])
+@pytest.mark.parametrize("data_width", [8, 16, 32])
+def test_axil_adapter(request, addr_width, data_width):
     dut = "axil_mitm"
     module = os.path.splitext(os.path.basename(__file__))[0]
     toplevel = dut
@@ -209,7 +210,7 @@ def test_axil_adapter(request, data_width):
 
     parameters = {}
 
-    parameters['ADDR_WIDTH'] = 32
+    parameters['ADDR_WIDTH'] = addr_width
     parameters['DATA_WIDTH'] = data_width
     parameters['STRB_WIDTH'] = parameters['DATA_WIDTH'] // 8
 

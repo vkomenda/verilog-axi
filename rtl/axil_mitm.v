@@ -67,12 +67,12 @@ module axil_mitm #
     output wire                     m_axil_rready
 );
 
-axil_adapter_wr #(
+axil_mitm_wr #(
     .ADDR_WIDTH(ADDR_WIDTH),
     .DATA_WIDTH(DATA_WIDTH),
     .STRB_WIDTH(STRB_WIDTH)
 )
-axil_adapter_wr_inst (
+axil_mitm_wr_inst (
     .clk(clk),
     .rst(rst),
 
@@ -107,12 +107,12 @@ axil_adapter_wr_inst (
     .m_axil_bready(m_axil_bready)
 );
 
-axil_adapter_rd #(
+axil_mitm_rd #(
     .ADDR_WIDTH(ADDR_WIDTH),
     .DATA_WIDTH(DATA_WIDTH),
     .STRB_WIDTH(STRB_WIDTH)
 )
-axil_adapter_rd_inst (
+axil_mitm_rd_inst (
     .clk(clk),
     .rst(rst),
 
