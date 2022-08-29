@@ -83,6 +83,7 @@ async def run_test_write(dut, data_in=None, idle_inserter=None, backpressure_ins
     tb = TB(dut)
 
     byte_lanes = tb.axil_master.write_if.byte_lanes
+    tb.log.info("write byte lanes %d", byte_lanes)
 
     await tb.cycle_reset()
 
@@ -92,18 +93,16 @@ async def run_test_write(dut, data_in=None, idle_inserter=None, backpressure_ins
     for length in range(1, byte_lanes*2):
         for offset in range(byte_lanes):
             tb.log.info("length %d, offset %d", length, offset)
-            addr = offset+0x1000
+            addr = offset
             test_data = bytearray([x % 256 for x in range(length)])
 
-            tb.axil_ram.write(addr-128, b'\xaa'*(length+256))
+            tb.axil_ram.write(addr, b'\xaa'*(length+256))
 
             await tb.axil_master.write(addr, test_data)
 
-            tb.log.debug("%s", tb.axil_ram.hexdump_str((addr & ~0xf)-16, (((addr & 0xf)+length-1) & ~0xf)+48))
+            tb.log.debug("%s", tb.axil_ram.hexdump_str((addr & ~0xf), (((addr & 0xf)+length-1) & ~0xf)+64))
 
             assert tb.axil_ram.read(addr, length) == test_data
-            assert tb.axil_ram.read(addr-1, 1) == b'\xaa'
-            assert tb.axil_ram.read(addr+length, 1) == b'\xaa'
 
     await RisingEdge(dut.clk)
     await RisingEdge(dut.clk)
@@ -114,6 +113,7 @@ async def run_test_read(dut, data_in=None, idle_inserter=None, backpressure_inse
     tb = TB(dut)
 
     byte_lanes = tb.axil_master.write_if.byte_lanes
+    tb.log.info("read byte lanes %d", byte_lanes)
 
     await tb.cycle_reset()
 
@@ -123,7 +123,7 @@ async def run_test_read(dut, data_in=None, idle_inserter=None, backpressure_inse
     for length in range(1, byte_lanes*2):
         for offset in range(byte_lanes):
             tb.log.info("length %d, offset %d", length, offset)
-            addr = offset+0x1000
+            addr = offset
             test_data = bytearray([x % 256 for x in range(length)])
 
             tb.axil_ram.write(addr, test_data)
@@ -161,9 +161,21 @@ async def run_stress_test(dut, idle_inserter=None, backpressure_inserter=None):
             assert data.data == test_data
 
     workers = []
+    range_bits = 4
 
-    for k in range(16):
-        workers.append(cocotb.start_soon(worker(tb.axil_master, k*0x1000, 0x1000, count=16)))
+    # TODO: make it a parameter
+    addr_width = 5
+
+    assert addr_width >= range_bits
+
+    addr_bits = 1 << addr_width
+
+    for k in range(1 << range_bits):
+        # TODO:
+        # offset = min(k * 0x1000, 1 << (addr_width - 2))
+        offset = 0
+        aperture = min(0x1000, addr_bits - offset)
+        workers.append(cocotb.start_soon(worker(tb.axil_master, offset, aperture, count=16)))
 
     while workers:
         await workers.pop(0).join()
@@ -195,7 +207,7 @@ tests_dir = os.path.abspath(os.path.dirname(__file__))
 rtl_dir = os.path.abspath(os.path.join(tests_dir, '..', '..', 'rtl'))
 
 
-@pytest.mark.parametrize("addr_width", [16, 32])
+@pytest.mark.parametrize("addr_width", [5, 16, 32])
 @pytest.mark.parametrize("data_width", [8, 16, 32])
 def test_axil_adapter(request, addr_width, data_width):
     dut = "axil_mitm"
