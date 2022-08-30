@@ -1,6 +1,7 @@
 """
 
 Copyright (c) 2020 Alex Forencich
+              2022 Vladimir Komendantskiy
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -149,6 +150,7 @@ async def run_stress_test(dut, idle_inserter=None, backpressure_inserter=None):
         for k in range(count):
             length = random.randint(1, min(32, aperture))
             addr = offset+random.randint(0, aperture-length)
+            tb.log.info("worker offset 0x%x, aperture 0x%x, length %d, addr 0x%x", offset, aperture, length, addr)
             test_data = bytearray([x % 256 for x in range(length)])
 
             await Timer(random.randint(1, 100), 'ns')
@@ -160,21 +162,21 @@ async def run_stress_test(dut, idle_inserter=None, backpressure_inserter=None):
             data = await master.read(addr, length)
             assert data.data == test_data
 
-    workers = []
-    range_bits = 4
+    addr_width = tb.axil_master.write_if.address_width
 
-    # TODO: make it a parameter
-    addr_width = 5
+    assert addr_width >= 4
+    min_offset_width = min(12, addr_width - 4)
+    extra_offset_width = max(1, addr_width - min_offset_width - 8)
 
-    assert addr_width >= range_bits
+    assert addr_width >= min_offset_width + extra_offset_width
 
     addr_bits = 1 << addr_width
+    min_offset = 1 << min_offset_width
+    workers = []
 
-    for k in range(1 << range_bits):
-        # TODO:
-        # offset = min(k * 0x1000, 1 << (addr_width - 2))
-        offset = 0
-        aperture = min(0x1000, addr_bits - offset)
+    for k in range(extra_offset_width):
+        offset = min_offset * (2 ^ k)  # CAVEAT: << inside the loop leads to superfluous test failures
+        aperture = min(min_offset, addr_bits - offset)
         workers.append(cocotb.start_soon(worker(tb.axil_master, offset, aperture, count=16)))
 
     while workers:
