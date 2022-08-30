@@ -97,7 +97,7 @@ async def run_test_write(dut, data_in=None, idle_inserter=None, backpressure_ins
             addr = offset
             test_data = bytearray([x % 256 for x in range(length)])
 
-            tb.axil_ram.write(addr, b'\xaa'*(length+256))
+            tb.axil_ram.write(addr, b'\xaa'*length)
 
             await tb.axil_master.write(addr, test_data)
 
