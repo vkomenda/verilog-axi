@@ -183,7 +183,6 @@ reg_inst
  .m_axil_rready(m_axil_rready)
 );
 
-
 endmodule
 
 `resetall
