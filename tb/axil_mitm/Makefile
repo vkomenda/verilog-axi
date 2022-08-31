@@ -32,6 +32,8 @@ MODULE   = test_$(DUT)
 VERILOG_SOURCES += ../../rtl/$(DUT).v
 VERILOG_SOURCES += ../../rtl/$(DUT)_wr.v
 VERILOG_SOURCES += ../../rtl/$(DUT)_rd.v
+VERILOG_SOURCES += ../../rtl/axil_register_rd.v
+VERILOG_SOURCES += ../../rtl/axil_register_wr.v
 
 # module parameters
 export PARAM_ADDR_WIDTH ?= 32

@@ -220,6 +220,8 @@ def test_axil_adapter(request, addr_width, data_width):
         os.path.join(rtl_dir, f"{dut}.v"),
         os.path.join(rtl_dir, f"{dut}_rd.v"),
         os.path.join(rtl_dir, f"{dut}_wr.v"),
+        os.path.join(rtl_dir, "axil_register_rd.v"),
+        os.path.join(rtl_dir, "axil_register_wr.v"),
     ]
 
     parameters = {}
