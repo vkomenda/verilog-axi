@@ -9,6 +9,8 @@
  */
 module axil_mitm #
 (
+    // Number of AXI outputs (master interfaces)
+    parameter M_COUNT = 8,
     // Width of address bus in bits
     parameter ADDR_WIDTH = 32,
     // Width of interface data bus in bits
@@ -57,14 +59,14 @@ module axil_mitm #
     input  wire [1:0]               m_axil_bresp,
     input  wire                     m_axil_bvalid,
     output wire                     m_axil_bready,
-    output wire [ADDR_WIDTH-1:0]    m_axil_araddr,
-    output wire [2:0]               m_axil_arprot,
-    output wire                     m_axil_arvalid,
-    input  wire                     m_axil_arready,
-    input  wire [DATA_WIDTH-1:0]    m_axil_rdata,
-    input  wire [1:0]               m_axil_rresp,
-    input  wire                     m_axil_rvalid,
-    output wire                     m_axil_rready
+    output wire [M_COUNT*ADDR_WIDTH-1:0]  m_axil_araddr,
+    output wire [M_COUNT*3-1:0]           m_axil_arprot,
+    output wire [M_COUNT-1:0]             m_axil_arvalid,
+    input  wire [M_COUNT-1:0]             m_axil_arready,
+    input  wire [M_COUNT*DATA_WIDTH-1:0]  m_axil_rdata,
+    input  wire [M_COUNT*2-1:0]           m_axil_rresp,
+    input  wire [M_COUNT-1:0]             m_axil_rvalid,
+    output wire [M_COUNT-1:0]             m_axil_rready
 );
 
 axil_mitm_wr #(
@@ -108,6 +110,7 @@ axil_mitm_wr_inst (
 );
 
 axil_mitm_rd #(
+    .M_COUNT(M_COUNT),
     .ADDR_WIDTH(ADDR_WIDTH),
     .DATA_WIDTH(DATA_WIDTH),
     .STRB_WIDTH(STRB_WIDTH)
