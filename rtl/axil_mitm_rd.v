@@ -79,7 +79,7 @@ reg [1:0] s_axil_rresp_reg = 2'd0, s_axil_rresp_next;
 reg s_axil_rvalid_reg = 1'b0, s_axil_rvalid_next;
 
 // Local araddr and arprot storage to reduce fanout of slave input nets.
-reg [M_COUNT*ADDR_WIDTH-1:0] i_axil_araddr_reg = {M_COUNT{ADDR_WIDTH{1'b0}}}, i_axil_araddr_next;
+reg [M_COUNT*ADDR_WIDTH-1:0] i_axil_araddr_reg = {M_COUNT*ADDR_WIDTH{1'b0}}, i_axil_araddr_next;
 reg [M_COUNT*3-1:0] i_axil_arprot_reg = {M_COUNT{3'd0}}, i_axil_arprot_next;
 reg [M_COUNT-1:0] i_axil_arvalid_reg = {M_COUNT{1'b0}}, i_axil_arvalid_next;
 reg [M_COUNT-1:0] i_axil_rready_reg = {M_COUNT{1'b0}}, i_axil_rready_next;
@@ -171,7 +171,7 @@ end // always @ (posedge clk)
 
 genvar n;
 
-generate for (n = 0; n < M_COUNT; n = n + 1) begin : i_fsms
+generate for (n = 0; n < M_COUNT; n = n + 1) begin : masters
     wire [ADDR_WIDTH-1:0]  i_n_axil_araddr  = i_axil_araddr[n * ADDR_WIDTH +: ADDR_WIDTH];
     wire [2:0]             i_n_axil_arprot  = i_axil_arprot[n * 3 +: 3];
     wire                   i_n_axil_arvalid = i_axil_arvalid[n];
@@ -181,18 +181,16 @@ generate for (n = 0; n < M_COUNT; n = n + 1) begin : i_fsms
     wire                   i_n_axil_rvalid  = i_axil_rvalid[n];
     wire                   i_n_axil_rready  = i_axil_rready[n];
 
-    wire [ADDR_WIDTH-1:0]  m_n_axil_araddr  = m_axil_araddr[n * ADDR_WIDTH +: ADDR_WIDTH];
-    wire [2:0]             m_n_axil_arprot  = m_axil_arprot[n * 3 +: 3];
-    wire                   m_n_axil_arvalid = m_axil_arvalid[n];
-    wire                   m_n_axil_arready = m_axil_arready[n];
-    wire [DATA_WIDTH-1:0]  m_n_axil_rdata   = m_axil_rdata[n * DATA_WIDTH +: DATA_WIDTH];
-    wire [1:0]             m_n_axil_rresp   = m_axil_rresp[n * 2 +: 2];
-    wire                   m_n_axil_rvalid  = m_axil_rvalid[n];
-    wire                   m_n_axil_rready  = m_axil_rready[n];
+    // wire [ADDR_WIDTH-1:0]  m_n_axil_araddr  = m_axil_araddr[n * ADDR_WIDTH +: ADDR_WIDTH];
+    // wire [2:0]             m_n_axil_arprot  = m_axil_arprot[n * 3 +: 3];
+    // wire                   m_n_axil_arvalid = m_axil_arvalid[n];
+    // wire                   m_n_axil_arready = m_axil_arready[n];
+    // wire [DATA_WIDTH-1:0]  m_n_axil_rdata   = m_axil_rdata[n * DATA_WIDTH +: DATA_WIDTH];
+    // wire [1:0]             m_n_axil_rresp   = m_axil_rresp[n * 2 +: 2];
+    // wire                   m_n_axil_rvalid  = m_axil_rvalid[n];
+    // wire                   m_n_axil_rready  = m_axil_rready[n];
 
-    wire                   i_n_state_reg = i_state_reg[n * 2 +: 2];
-
-    // M side register
+    // master register
     axil_register_rd #
                   (
                    .DATA_WIDTH(DATA_WIDTH),
@@ -213,16 +211,16 @@ generate for (n = 0; n < M_COUNT; n = n + 1) begin : i_fsms
                    .s_axil_rresp(i_n_axil_rresp),
                    .s_axil_rvalid(i_n_axil_rvalid),
                    .s_axil_rready(i_n_axil_rready),
-                   .m_axil_araddr(m_n_axil_araddr),
-                   .m_axil_arprot(m_n_axil_arprot),
-                   .m_axil_arvalid(m_n_axil_arvalid),
-                   .m_axil_arready(m_n_axil_arready),
-                   .m_axil_rdata(m_n_axil_rdata),
-                   .m_axil_rresp(m_n_axil_rresp),
-                   .m_axil_rvalid(m_n_axil_rvalid),
-                   .m_axil_rready(m_n_axil_rready)
+                   .m_axil_araddr(m_axil_araddr[n * ADDR_WIDTH +: ADDR_WIDTH]),
+                   .m_axil_arprot(m_axil_arprot[n * 3 +: 3]),
+                   .m_axil_arvalid(m_axil_arvalid[n]),
+                   .m_axil_arready(m_axil_arready[n]),
+                   .m_axil_rdata(m_axil_rdata[n * DATA_WIDTH +: DATA_WIDTH]),
+                   .m_axil_rresp(m_axil_rresp[n * 2 +: 2]),
+                   .m_axil_rvalid(m_axil_rvalid[n]),
+                   .m_axil_rready(m_axil_rready[n])
                   );
-endgenerate
+end endgenerate
 
 endmodule
 

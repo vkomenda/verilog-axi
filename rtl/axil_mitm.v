@@ -46,30 +46,31 @@ module axil_mitm #
     input  wire                     s_axil_rready,
 
     /*
-     * AXI lite master interface
+     * AXI lite master interfaces
      */
-    output wire [ADDR_WIDTH-1:0]    m_axil_awaddr,
-    output wire [2:0]               m_axil_awprot,
-    output wire                     m_axil_awvalid,
-    input  wire                     m_axil_awready,
-    output wire [DATA_WIDTH-1:0]    m_axil_wdata,
-    output wire [STRB_WIDTH-1:0]    m_axil_wstrb,
-    output wire                     m_axil_wvalid,
-    input  wire                     m_axil_wready,
-    input  wire [1:0]               m_axil_bresp,
-    input  wire                     m_axil_bvalid,
-    output wire                     m_axil_bready,
-    output wire [M_COUNT*ADDR_WIDTH-1:0]  m_axil_araddr,
-    output wire [M_COUNT*3-1:0]           m_axil_arprot,
-    output wire [M_COUNT-1:0]             m_axil_arvalid,
-    input  wire [M_COUNT-1:0]             m_axil_arready,
-    input  wire [M_COUNT*DATA_WIDTH-1:0]  m_axil_rdata,
-    input  wire [M_COUNT*2-1:0]           m_axil_rresp,
-    input  wire [M_COUNT-1:0]             m_axil_rvalid,
-    output wire [M_COUNT-1:0]             m_axil_rready
+    output wire [M_COUNT*ADDR_WIDTH-1:0]    m_axil_awaddr,
+    output wire [M_COUNT*3-1:0]             m_axil_awprot,
+    output wire [M_COUNT-1:0]               m_axil_awvalid,
+    input  wire [M_COUNT-1:0]               m_axil_awready,
+    output wire [M_COUNT*DATA_WIDTH-1:0]    m_axil_wdata,
+    output wire [M_COUNT*STRB_WIDTH-1:0]    m_axil_wstrb,
+    output wire [M_COUNT-1:0]               m_axil_wvalid,
+    input  wire [M_COUNT-1:0]               m_axil_wready,
+    input  wire [M_COUNT*2-1:0]             m_axil_bresp,
+    input  wire [M_COUNT-1:0]               m_axil_bvalid,
+    output wire [M_COUNT-1:0]               m_axil_bready,
+    output wire [M_COUNT*ADDR_WIDTH-1:0]    m_axil_araddr,
+    output wire [M_COUNT*3-1:0]             m_axil_arprot,
+    output wire [M_COUNT-1:0]               m_axil_arvalid,
+    input  wire [M_COUNT-1:0]               m_axil_arready,
+    input  wire [M_COUNT*DATA_WIDTH-1:0]    m_axil_rdata,
+    input  wire [M_COUNT*2-1:0]             m_axil_rresp,
+    input  wire [M_COUNT-1:0]               m_axil_rvalid,
+    output wire [M_COUNT-1:0]               m_axil_rready
 );
 
 axil_mitm_wr #(
+    .M_COUNT(M_COUNT),
     .ADDR_WIDTH(ADDR_WIDTH),
     .DATA_WIDTH(DATA_WIDTH),
     .STRB_WIDTH(STRB_WIDTH)
@@ -79,7 +80,7 @@ axil_mitm_wr_inst (
     .rst(rst),
 
     /*
-     * AXI lite slave interface
+     * AXI lite slave interfaces
      */
     .s_axil_awaddr(s_axil_awaddr),
     .s_axil_awprot(s_axil_awprot),
@@ -94,7 +95,7 @@ axil_mitm_wr_inst (
     .s_axil_bready(s_axil_bready),
 
     /*
-     * AXI lite master interface
+     * AXI lite master interfaces
      */
     .m_axil_awaddr(m_axil_awaddr),
     .m_axil_awprot(m_axil_awprot),

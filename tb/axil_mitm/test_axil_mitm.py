@@ -43,13 +43,17 @@ class TB(object):
     def __init__(self, dut):
         self.dut = dut
 
+        m_count = len(dut.axil_mitm_inst.m_axil_awvalid)
+
         self.log = logging.getLogger("cocotb.tb")
         self.log.setLevel(logging.DEBUG)
 
         cocotb.start_soon(Clock(dut.clk, 10, units="ns").start())
 
         self.axil_master = AxiLiteMaster(AxiLiteBus.from_prefix(dut, "s_axil"), dut.clk, dut.rst)
-        self.axil_ram = AxiLiteRam(AxiLiteBus.from_prefix(dut, "m_axil"), dut.clk, dut.rst, size=2**16)
+        self.axil_ram = [
+            AxiLiteRam(AxiLiteBus.from_prefix(dut, f"m{k:02d}_axil"), dut.clk, dut.rst, size=2**16) for k in range(m_count)
+        ]
 
     def set_idle_generator(self, generator=None):
         if generator:
@@ -209,9 +213,10 @@ tests_dir = os.path.abspath(os.path.dirname(__file__))
 rtl_dir = os.path.abspath(os.path.join(tests_dir, '..', '..', 'rtl'))
 
 
+@pytest.mark.parametrize("m_count", [4, 8, 16])
 @pytest.mark.parametrize("addr_width", [5, 16, 32])
 @pytest.mark.parametrize("data_width", [8, 16, 32])
-def test_axil_mitm(request, addr_width, data_width):
+def test_axil_mitm(request, m_count, addr_width, data_width):
     dut = "axil_mitm"
     module = os.path.splitext(os.path.basename(__file__))[0]
     toplevel = dut
@@ -226,6 +231,7 @@ def test_axil_mitm(request, addr_width, data_width):
 
     parameters = {}
 
+    parameters['M_COUNT'] = m_count
     parameters['ADDR_WIDTH'] = addr_width
     parameters['DATA_WIDTH'] = data_width
     parameters['STRB_WIDTH'] = parameters['DATA_WIDTH'] // 8
