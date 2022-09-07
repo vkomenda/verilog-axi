@@ -43,7 +43,7 @@ class TB(object):
     def __init__(self, dut):
         self.dut = dut
 
-        m_count = len(dut.axil_mitm_inst.m_axil_awvalid)
+        self.m_count = len(dut.axil_mitm_inst.m_axil_awvalid)
 
         self.log = logging.getLogger("cocotb.tb")
         self.log.setLevel(logging.DEBUG)
@@ -52,7 +52,7 @@ class TB(object):
 
         self.axil_master = AxiLiteMaster(AxiLiteBus.from_prefix(dut, "s_axil"), dut.clk, dut.rst)
         self.axil_ram = [
-            AxiLiteRam(AxiLiteBus.from_prefix(dut, f"m{k:02d}_axil"), dut.clk, dut.rst, size=2**16) for k in range(m_count)
+            AxiLiteRam(AxiLiteBus.from_prefix(dut, f"m{k:02d}_axil"), dut.clk, dut.rst, size=2**16) for k in range(self.m_count)
         ]
 
     def set_idle_generator(self, generator=None):
@@ -60,16 +60,18 @@ class TB(object):
             self.axil_master.write_if.aw_channel.set_pause_generator(generator())
             self.axil_master.write_if.w_channel.set_pause_generator(generator())
             self.axil_master.read_if.ar_channel.set_pause_generator(generator())
-            self.axil_ram.write_if.b_channel.set_pause_generator(generator())
-            self.axil_ram.read_if.r_channel.set_pause_generator(generator())
+            for k in range(self.m_count):
+                self.axil_ram[k].write_if.b_channel.set_pause_generator(generator())
+                self.axil_ram[k].read_if.r_channel.set_pause_generator(generator())
 
     def set_backpressure_generator(self, generator=None):
         if generator:
             self.axil_master.write_if.b_channel.set_pause_generator(generator())
             self.axil_master.read_if.r_channel.set_pause_generator(generator())
-            self.axil_ram.write_if.aw_channel.set_pause_generator(generator())
-            self.axil_ram.write_if.w_channel.set_pause_generator(generator())
-            self.axil_ram.read_if.ar_channel.set_pause_generator(generator())
+            for k in range(self.m_count):
+                self.axil_ram[k].write_if.aw_channel.set_pause_generator(generator())
+                self.axil_ram[k].write_if.w_channel.set_pause_generator(generator())
+                self.axil_ram[k].read_if.ar_channel.set_pause_generator(generator())
 
     async def cycle_reset(self):
         self.dut.rst.setimmediatevalue(0)
@@ -86,9 +88,9 @@ class TB(object):
 async def run_test_write(dut, data_in=None, idle_inserter=None, backpressure_inserter=None):
 
     tb = TB(dut)
-
     byte_lanes = tb.axil_master.write_if.byte_lanes
-    tb.log.info("write byte lanes %d", byte_lanes)
+
+    tb.log.info("m_count %d, write byte lanes %d", tb.m_count, byte_lanes)
 
     await tb.cycle_reset()
 
@@ -101,13 +103,15 @@ async def run_test_write(dut, data_in=None, idle_inserter=None, backpressure_ins
             addr = offset
             test_data = bytearray([x % 256 for x in range(length)])
 
-            tb.axil_ram.write(addr, b'\xaa'*length)
+            for k in range(tb.m_count):
+                tb.axil_ram[k].write(addr, b'\xaa'*length)
 
             await tb.axil_master.write(addr, test_data)
 
-            tb.log.debug("%s", tb.axil_ram.hexdump_str((addr & ~0xf), (((addr & 0xf)+length-1) & ~0xf)+64))
+            # tb.log.debug("%s", tb.axil_ram[0].hexdump_str((addr & ~0xf), (((addr & 0xf)+length-1) & ~0xf)+64))
 
-            assert tb.axil_ram.read(addr, length) == test_data
+            for k in range(tb.m_count):
+                assert tb.axil_ram[k].read(addr, length) == test_data
 
     await RisingEdge(dut.clk)
     await RisingEdge(dut.clk)
@@ -116,9 +120,9 @@ async def run_test_write(dut, data_in=None, idle_inserter=None, backpressure_ins
 async def run_test_read(dut, data_in=None, idle_inserter=None, backpressure_inserter=None):
 
     tb = TB(dut)
-
     byte_lanes = tb.axil_master.write_if.byte_lanes
-    tb.log.info("read byte lanes %d", byte_lanes)
+
+    tb.log.info("m_count %d, read byte lanes %d", tb.m_count, byte_lanes)
 
     await tb.cycle_reset()
 
@@ -131,7 +135,8 @@ async def run_test_read(dut, data_in=None, idle_inserter=None, backpressure_inse
             addr = offset
             test_data = bytearray([x % 256 for x in range(length)])
 
-            tb.axil_ram.write(addr, test_data)
+            for k in range(tb.m_count):
+                tb.axil_ram[k].write(addr, test_data)
 
             data = await tb.axil_master.read(addr, length)
 

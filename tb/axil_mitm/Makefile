@@ -6,7 +6,7 @@ WAVES ?= 0
 COCOTB_HDL_TIMEUNIT = 1ns
 COCOTB_HDL_TIMEPRECISION = 1ps
 
-export PARAM_M_COUNT ?= 8
+export PARAM_M_COUNT ?= 2
 
 DUT      = axil_mitm
 WRAPPER  = $(DUT)_wrap_$(PARAM_M_COUNT)
